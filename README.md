@@ -1,90 +1,151 @@
-// Header.js
-import React, { useState } from 'react';
-import { FaBars, FaTimes } from 'react-icons/fa';
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f0f2f5;
+  color: #333;
+}
 
-const Header = () => {
-  const [navOpen, setNavOpen] = useState(false);
+#root {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
 
-  const toggleNav = () => setNavOpen(!navOpen);
+.app-container {
+  display: flex;
+  width: 100%;
+  height: 100vh; /* Ensure it takes full viewport height */
+}
 
-  return (
-    <header className="bg-white shadow-md fixed top-0 left-0 w-full z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
-        <a href="/" className="text-xl font-bold text-red-700">Wells Fargo</a>
-        <nav className="hidden md:flex space-x-6">
-          <a href="#" className="text-gray-700 hover:text-red-700">Home</a>
-          <a href="#" className="text-gray-700 hover:text-red-700">Accounts</a>
-          <a href="#" className="text-gray-700 hover:text-red-700">Loans</a>
-          <a href="#" className="text-gray-700 hover:text-red-700">Contact</a>
-        </nav>
-        <button onClick={toggleNav} className="md:hidden text-gray-700">
-          {navOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
-        </button>
-      </div>
-      {navOpen && (
-        <div className="md:hidden bg-white shadow-md">
-          <nav className="flex flex-col space-y-2 px-4 py-2">
-            <a href="#" className="text-gray-700 hover:text-red-700">Home</a>
-            <a href="#" className="text-gray-700 hover:text-red-700">Accounts</a>
-            <a href="#" className="text-gray-700 hover:text-red-700">Loans</a>
-            <a href="#" className="text-gray-700 hover:text-red-700">Contact</a>
-          </nav>
-        </div>
-      )}
-    </header>
-  );
-};
+/* Scrollbar styling (optional, for better aesthetics) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
 
-export default Header;
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
 
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
 
-// Footer.js
-import React from 'react';
-import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin } from 'react-icons/fa';
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
 
-const Footer = () => {
-  return (
-    <footer className="bg-gray-900 text-white py-10">
-      <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
-        <div>
-          <h3 className="text-xl font-semibold mb-4">Wells Fargo</h3>
-          <p className="text-sm">Trusted banking since 1852.</p>
-        </div>
-        <div>
-          <h4 className="text-lg font-semibold mb-2">Services</h4>
-          <ul className="space-y-1">
-            <li><a href="#" className="hover:underline">Checking</a></li>
-            <li><a href="#" className="hover:underline">Savings</a></li>
-            <li><a href="#" className="hover:underline">Credit Cards</a></li>
-            <li><a href="#" className="hover:underline">Loans</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4 className="text-lg font-semibold mb-2">Support</h4>
-          <ul className="space-y-1">
-            <li><a href="#" className="hover:underline">Help Center</a></li>
-            <li><a href="#" className="hover:underline">Security</a></li>
-            <li><a href="#" className="hover:underline">Privacy</a></li>
-            <li><a href="#" className="hover:underline">Accessibility</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4 className="text-lg font-semibold mb-2">Connect</h4>
-          <div className="flex space-x-4 mt-2">
-            <a href="#" aria-label="Facebook"><FaFacebook className="text-2xl hover:text-gray-400" /></a>
-            <a href="#" aria-label="Twitter"><FaTwitter className="text-2xl hover:text-gray-400" /></a>
-            <a href="#" aria-label="Instagram"><FaInstagram className="text-2xl hover:text-gray-400" /></a>
-            <a href="#" aria-label="LinkedIn"><FaLinkedin className="text-2xl hover:text-gray-400" /></a>
-          </div>
-        </div>
-      </div>
-      <div className="mt-8 text-center text-sm text-gray-400">
-        &copy; {new Date().getFullYear()} Wells Fargo. All rights reserved.
-      </div>
-    </footer>
-  );
-};
+/* Basic button styles */
+button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 8px;
+  background-color: #007bff;
+  color: white;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
 
-export default Footer;
+button:hover:not(:disabled) {
+  background-color: #0056b3;
+}
 
-export default ChatWindow;
+button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+/* Input field styles */
+input[type="text"],
+input[type="number"],
+input[type="email"],
+textarea {
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1em;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="email"]:focus,
+textarea:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+}
+
+/* Markdown specific styles for chat messages */
+.react-markdown p {
+  margin-top: 0;
+  margin-bottom: 0.5em;
+  line-height: 1.5;
+}
+
+.react-markdown ul,
+.react-markdown ol {
+  margin-top: 0;
+  margin-bottom: 0.5em;
+  padding-left: 20px;
+}
+
+.react-markdown li {
+  margin-bottom: 0.2em;
+}
+
+.react-markdown pre {
+  background-color: #e9ecef;
+  padding: 10px;
+  border-radius: 5px;
+  overflow-x: auto;
+  font-family: monospace;
+  font-size: 0.9em;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+.react-markdown code {
+  background-color: #e9ecef;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 0.9em;
+}
+
+/* Specific for invoice extracted data */
+.extracted-details-json pre {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  color: #495057;
+}
+
+/* Invoice Preview Section (optional) */
+.invoice-preview-container {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 15px;
+  margin-top: 15px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+.invoice-preview-container h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #444;
+}
+.invoice-preview-field {
+  margin-bottom: 5px;
+  font-size: 0.9em;
+}
+.invoice-preview-field strong {
+  color: #555;
+  min-width: 100px;
+  display: inline-block;
+}
