@@ -57,21 +57,51 @@ export const mockSessions = [
 
 // Mock function to simulate API calls
 export const mockApi = {
-  getSessions: () => Promise.resolve(mockSessions),
-  createSession: () => Promise.resolve({
-    _id: "4",
-    title: "New Chat",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    messages: []
-  }),
-  sendMessage: (sessionId, message) => Promise.resolve({
-    _id: `msg${Date.now()}`,
-    content: message,
-    role: "user",
-    timestamp: new Date().toISOString()
-  })
+  getSessions: () => {
+    // Simulate a small delay to mimic real API
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(mockSessions);
+      }, 500);
+    });
+  },
+  
+  createSession: () => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({
+          _id: `session_${Date.now()}`,
+          title: "New Chat",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          messages: [
+            {
+              _id: `msg_${Date.now()}`,
+              content: "Welcome to Invoice Validator! How can I help you today?",
+              role: "assistant",
+              timestamp: new Date().toISOString()
+            }
+          ]
+        });
+      }, 500);
+    });
+  },
+  
+  sendMessage: (sessionId, message) => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({
+          _id: `msg_${Date.now()}`,
+          content: message,
+          role: "user",
+          timestamp: new Date().toISOString()
+        });
+      }, 500);
+    });
+  }
 };
+
+
 
 import React, { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
@@ -94,12 +124,15 @@ function App() {
     setLoadingSessions(true);
     setErrorLoadingSessions(null);
     try {
-      // Using mock API instead of real API call
       const fetchedSessions = await mockApi.getSessions();
-      setSessions(fetchedSessions);
-      // Automatically select the most recent session if available
-      if (fetchedSessions.length > 0 && !selectedSession) {
-        setSelectedSession(fetchedSessions[0]);
+      if (fetchedSessions && Array.isArray(fetchedSessions)) {
+        setSessions(fetchedSessions);
+        // Automatically select the most recent session if available
+        if (fetchedSessions.length > 0 && !selectedSession) {
+          setSelectedSession(fetchedSessions[0]);
+        }
+      } else {
+        throw new Error('Invalid response format');
       }
     } catch (error) {
       console.error('Error fetching sessions:', error);
@@ -111,12 +144,13 @@ function App() {
 
   const handleNewChat = async () => {
     try {
-      // Using mock API instead of real API call
       const newSession = await mockApi.createSession();
-      
-      // Update sessions list and select the new session
-      setSessions(prev => [newSession, ...prev]); // Add new session to top
-      setSelectedSession(newSession);
+      if (newSession && newSession._id) {
+        setSessions(prev => [newSession, ...prev]);
+        setSelectedSession(newSession);
+      } else {
+        throw new Error('Invalid session data received');
+      }
     } catch (error) {
       console.error('Error creating new chat:', error);
       alert(`Failed to create new chat: ${error.message}`);
@@ -127,10 +161,65 @@ function App() {
     setSelectedSession(session);
   };
 
-  // Optional: Function to refresh the sessions list
   const refreshSessions = () => {
     fetchSessions();
   };
 
-  // ... rest of the component remains the same ...
-// ... existing code ...
+  return (
+    <div className="app-container">
+      <Sidebar
+        sessions={sessions}
+        selectedSession={selectedSession}
+        onSelect={handleSelectSession}
+        onNewChat={handleNewChat}
+        loading={loadingSessions}
+        error={errorLoadingSessions}
+      />
+
+      {selectedSession ? (
+        <ChatWindow
+          sessionId={selectedSession._id}
+          sessionTitle={selectedSession.title}
+          onMessageSentOrUploaded={refreshSessions}
+        />
+      ) : (
+        <div style={{
+          flex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexDirection: 'column',
+          textAlign: 'center',
+          padding: '2rem',
+          background: '#fff',
+          margin: 20,
+          borderRadius: 10,
+          boxShadow: '0 4px 10px rgba(0,0,0,0.05)'
+        }}>
+          <h2>Welcome to Invoice Validator</h2>
+          <p>Create a new chat to get started with invoice validation.</p>
+          <button
+            onClick={handleNewChat}
+            style={{ 
+              marginTop: '1rem', 
+              padding: '12px 25px', 
+              fontSize: '1.1em',
+              backgroundColor: '#1976d2',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              transition: 'background-color 0.2s'
+            }}
+            onMouseOver={(e) => e.target.style.backgroundColor = '#1565c0'}
+            onMouseOut={(e) => e.target.style.backgroundColor = '#1976d2'}
+          >
+            Start New Chat
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default App;
