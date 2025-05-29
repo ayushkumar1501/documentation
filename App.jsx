@@ -1,111 +1,62 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import Sidebar from './Sidebar';
-import ChatWindow from './ChatWindow';
-import './index.css'; // Import global styles
+import React from 'react';
 
-function App() {
-  const [selectedSession, setSelectedSession] = useState(null);
-  const [sessions, setSessions] = useState([]);
-  const [loadingSessions, setLoadingSessions] = useState(true);
-  const [errorLoadingSessions, setErrorLoadingSessions] = useState(null);
-
-  // Fetch sessions on component mount
-  useEffect(() => {
-    fetchSessions();
-  }, []);
-
-  const fetchSessions = async () => {
-    setLoadingSessions(true);
-    setErrorLoadingSessions(null);
-    try {
-      const res = await axios.get('http://localhost:5050/sessions');
-      const fetchedSessions = res.data;
-      setSessions(fetchedSessions);
-      // Automatically select the most recent session if available
-      if (fetchedSessions.length > 0 && !selectedSession) {
-        setSelectedSession(fetchedSessions[0]);
-      }
-    } catch (error) {
-      console.error('Error fetching sessions:', error);
-      setErrorLoadingSessions('Failed to load chat history. Please refresh.');
-    } finally {
-      setLoadingSessions(false);
-    }
-  };
-
-  const handleNewChat = async () => {
-    try {
-      const res = await axios.post('http://localhost:5050/sessions', {
-        title: 'New Chat'
-      });
-      const newSession = res.data;
-
-      // Send welcome message to the new session
-      await axios.post(`http://localhost:5050/sessions/${newSession._id}/welcome`);
-
-      // Update sessions list and select the new session
-      setSessions(prev => [newSession, ...prev]); // Add new session to top
-      setSelectedSession(newSession);
-    } catch (error) {
-      console.error('Error creating new chat:', error.response?.data || error.message);
-      alert(`Failed to create new chat: ${error.response?.data?.error || error.message}`);
-    }
-  };
-
-  const handleSelectSession = (session) => {
-    setSelectedSession(session);
-  };
-
-  // Optional: Function to refresh the sessions list, e.g., after an upload for `updatedAt` to reflect
-  const refreshSessions = () => {
-    fetchSessions();
-  };
-
-
+function Sidebar({ sessions, selectedSession, onSelect, onNewChat, loading, error }) {
   return (
-    <div className="app-container">
-      <Sidebar
-        sessions={sessions}
-        selectedSession={selectedSession}
-        onSelect={handleSelectSession}
-        onNewChat={handleNewChat}
-        loading={loadingSessions}
-        error={errorLoadingSessions}
-      />
+    <div style={{
+        width: 280,
+        borderRight: '1px solid #e0e0e0',
+        height: '100vh',
+        padding: 16,
+        boxSizing: 'border-box',
+        background: '#ffffff',
+        display: 'flex',
+        flexDirection: 'column',
+        boxShadow: '2px 0 5px rgba(0,0,0,0.05)'
+    }}>
+      <button style={{ width: '100%', marginBottom: 16, padding: '12px 15px', borderRadius: '8px', fontSize: '1em' }} onClick={onNewChat}>+ New Chat</button>
 
-      {selectedSession ? (
-        <ChatWindow
-          sessionId={selectedSession._id}
-          sessionTitle={selectedSession.title}
-          onMessageSentOrUploaded={refreshSessions} // Pass refresh prop
-        />
-      ) : (
-        <div style={{
-          flex: 1,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexDirection: 'column',
-          textAlign: 'center',
-          padding: '2rem',
-          background: '#fff',
-          margin: 20,
-          borderRadius: 10,
-          boxShadow: '0 4px 10px rgba(0,0,0,0.05)'
-        }}>
-          <h2>Welcome to Invoice Validator</h2>
-          <p>Create a new chat to get started with invoice validation.</p>
-          <button
-            onClick={handleNewChat}
-            style={{ marginTop: '1rem', padding: '12px 25px', fontSize: '1.1em' }}
+      <h3 style={{ marginTop: 0, marginBottom: 10, color: '#555' }}>Chat History</h3>
+      {loading && <p style={{ color: '#888', textAlign: 'center' }}>Loading sessions...</p>}
+      {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
+
+      <div style={{
+          flexGrow: 1,
+          overflowY: 'auto',
+          paddingRight: 8, // For scrollbar spacing
+          minHeight: 0 // Crucial for flex item shrinking
+      }}>
+        {sessions.length === 0 && !loading && !error && (
+          <p style={{ color: '#888', textAlign: 'center', fontSize: '0.9em' }}>No sessions yet. Click "New Chat"!</p>
+        )}
+        {sessions.map(session => (
+          <div
+            key={session._id}
+            onClick={() => onSelect(session)}
+            style={{
+              padding: '12px 15px',
+              marginBottom: 8,
+              borderRadius: 8,
+              background: selectedSession && selectedSession._id === session._id ? '#e3eaff' : '#f0f2f5',
+              color: selectedSession && selectedSession._id === session._id ? '#1976d2' : '#333',
+              cursor: 'pointer',
+              fontWeight: selectedSession && selectedSession._id === session._id ? 'bold' : 'normal',
+              border: selectedSession && selectedSession._id === session._id ? '1px solid #1976d2' : '1px solid #f0f0f0',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              boxShadow: selectedSession && selectedSession._id === session._id ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+              transition: 'background 0.2s ease, border 0.2s ease'
+            }}
           >
-            Start New Chat
-          </button>
-        </div>
-      )}
+            {session.title || 'New Chat'}
+            <div style={{ fontSize: '0.75em', color: selectedSession && selectedSession._id === session._id ? '#4a8cd4' : '#666' }}>
+              {new Date(session.updatedAt).toLocaleString()}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
 
-export default App;
+export default Sidebar;
