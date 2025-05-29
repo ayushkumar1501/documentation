@@ -1,88 +1,111 @@
-// Footer.js
-import React from 'react';
-import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import Sidebar from './Sidebar';
+import ChatWindow from './ChatWindow';
+import './index.css'; // Import global styles
 
-const Footer = () => {
+function App() {
+  const [selectedSession, setSelectedSession] = useState(null);
+  const [sessions, setSessions] = useState([]);
+  const [loadingSessions, setLoadingSessions] = useState(true);
+  const [errorLoadingSessions, setErrorLoadingSessions] = useState(null);
+
+  // Fetch sessions on component mount
+  useEffect(() => {
+    fetchSessions();
+  }, []);
+
+  const fetchSessions = async () => {
+    setLoadingSessions(true);
+    setErrorLoadingSessions(null);
+    try {
+      const res = await axios.get('http://localhost:5050/sessions');
+      const fetchedSessions = res.data;
+      setSessions(fetchedSessions);
+      // Automatically select the most recent session if available
+      if (fetchedSessions.length > 0 && !selectedSession) {
+        setSelectedSession(fetchedSessions[0]);
+      }
+    } catch (error) {
+      console.error('Error fetching sessions:', error);
+      setErrorLoadingSessions('Failed to load chat history. Please refresh.');
+    } finally {
+      setLoadingSessions(false);
+    }
+  };
+
+  const handleNewChat = async () => {
+    try {
+      const res = await axios.post('http://localhost:5050/sessions', {
+        title: 'New Chat'
+      });
+      const newSession = res.data;
+
+      // Send welcome message to the new session
+      await axios.post(`http://localhost:5050/sessions/${newSession._id}/welcome`);
+
+      // Update sessions list and select the new session
+      setSessions(prev => [newSession, ...prev]); // Add new session to top
+      setSelectedSession(newSession);
+    } catch (error) {
+      console.error('Error creating new chat:', error.response?.data || error.message);
+      alert(`Failed to create new chat: ${error.response?.data?.error || error.message}`);
+    }
+  };
+
+  const handleSelectSession = (session) => {
+    setSelectedSession(session);
+  };
+
+  // Optional: Function to refresh the sessions list, e.g., after an upload for `updatedAt` to reflect
+  const refreshSessions = () => {
+    fetchSessions();
+  };
+
+
   return (
-    <footer className="bg-gray-900 text-white py-10">
-      <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
-        <div>
-          <h3 className="text-xl font-semibold mb-4">Wells Fargo</h3>
-          <p className="text-sm">Trusted banking since 1852.</p>
-        </div>
-        <div>
-          <h4 className="text-lg font-semibold mb-2">Services</h4>
-          <ul className="space-y-1">
-            <li><a href="#" className="hover:underline">Checking</a></li>
-            <li><a href="#" className="hover:underline">Savings</a></li>
-            <li><a href="#" className="hover:underline">Credit Cards</a></li>
-            <li><a href="#" className="hover:underline">Loans</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4 className="text-lg font-semibold mb-2">Support</h4>
-          <ul className="space-y-1">
-            <li><a href="#" className="hover:underline">Help Center</a></li>
-            <li><a href="#" className="hover:underline">Security</a></li>
-            <li><a href="#" className="hover:underline">Privacy</a></li>
-            <li><a href="#" className="hover:underline">Accessibility</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4 className="text-lg font-semibold mb-2">Connect</h4>
-          <div className="flex space-x-4 mt-2">
-            <a href="#" aria-label="Facebook"><FaFacebook className="text-2xl hover:text-gray-400" /></a>
-            <a href="#" aria-label="Twitter"><FaTwitter className="text-2xl hover:text-gray-400" /></a>
-            <a href="#" aria-label="Instagram"><FaInstagram className="text-2xl hover:text-gray-400" /></a>
-            <a href="#" aria-label="LinkedIn"><FaLinkedin className="text-2xl hover:text-gray-400" /></a>
-          </div>
-        </div>
-      </div>
-      <div className="mt-8 text-center text-sm text-gray-400">
-        &copy; {new Date().getFullYear()} Wells Fargo. All rights reserved.
-      </div>
-    </footer>
-  );
-};
+    <div className="app-container">
+      <Sidebar
+        sessions={sessions}
+        selectedSession={selectedSession}
+        onSelect={handleSelectSession}
+        onNewChat={handleNewChat}
+        loading={loadingSessions}
+        error={errorLoadingSessions}
+      />
 
-export default Footer;
-
-
-// Header.js
-import React, { useState } from 'react';
-import { FaBars, FaTimes } from 'react-icons/fa';
-
-const Header = () => {
-  const [navOpen, setNavOpen] = useState(false);
-
-  const toggleNav = () => setNavOpen(!navOpen);
-
-  return (
-    <header className="bg-white shadow-md fixed top-0 left-0 w-full z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
-        <a href="/" className="text-xl font-bold text-red-700">Wells Fargo</a>
-        <nav className="hidden md:flex space-x-6">
-          <a href="#" className="text-gray-700 hover:text-red-700">Home</a>
-          <a href="#" className="text-gray-700 hover:text-red-700">Accounts</a>
-          <a href="#" className="text-gray-700 hover:text-red-700">Loans</a>
-          <a href="#" className="text-gray-700 hover:text-red-700">Contact</a>
-        </nav>
-        <button onClick={toggleNav} className="md:hidden text-gray-700">
-          {navOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
-        </button>
-      </div>
-      {navOpen && (
-        <div className="md:hidden bg-white shadow-md">
-          <nav className="flex flex-col space-y-2 px-4 py-2">
-            <a href="#" className="text-gray-700 hover:text-red-700">Home</a>
-            <a href="#" className="text-gray-700 hover:text-red-700">Accounts</a>
-            <a href="#" className="text-gray-700 hover:text-red-700">Loans</a>
-            <a href="#" className="text-gray-700 hover:text-red-700">Contact</a>
-          </nav>
+      {selectedSession ? (
+        <ChatWindow
+          sessionId={selectedSession._id}
+          sessionTitle={selectedSession.title}
+          onMessageSentOrUploaded={refreshSessions} // Pass refresh prop
+        />
+      ) : (
+        <div style={{
+          flex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexDirection: 'column',
+          textAlign: 'center',
+          padding: '2rem',
+          background: '#fff',
+          margin: 20,
+          borderRadius: 10,
+          boxShadow: '0 4px 10px rgba(0,0,0,0.05)'
+        }}>
+          <h2>Welcome to Invoice Validator</h2>
+          <p>Create a new chat to get started with invoice validation.</p>
+          <button
+            onClick={handleNewChat}
+            style={{ marginTop: '1rem', padding: '12px 25px', fontSize: '1.1em' }}
+          >
+            Start New Chat
+          </button>
         </div>
       )}
-    </header>
+    </div>
   );
-};
+}
 
-export default Header;
+export default App;
